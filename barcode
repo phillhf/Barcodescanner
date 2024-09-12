@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <style>
+        video {
+            width: 100%;
+            height: auto;
+        }
+        #barcodeResult {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        button {
+            margin-top: 20px;
+        }
+    </style>
+    <!-- Zebra-Crossing (ZXing) JavaScript-Bibliothek -->
+    <script src="https://unpkg.com/@zxing/browser@0.0.9/umd/index.min.js"></script>
+</head>
+<body>
+    <h1>Barcode Scanner</h1>
+    
+    <!-- Kamera-Vorschau -->
+    <video id="video" autoplay></video>
+
+    <!-- Eingabefeld für den benutzerdefinierten Text -->
+    <input type="text" id="customText" placeholder="Geben Sie Ihren Text ein">
+
+    <!-- Button zum Barcode scannen und E-Mail versenden -->
+    <button onclick="sendEmail()">Barcode und Text senden</button>
+
+    <!-- Ergebnisanzeige des Barcode-Scans -->
+    <p id="barcodeResult">Gescannten Barcode hier anzeigen</p>
+
+    <script>
+        // Zebra-Crossing (ZXing) Barcode-Reader initialisieren
+        const codeReader = new ZXing.BrowserBarcodeReader();
+        const videoElement = document.getElementById('video');
+        const barcodeResultElement = document.getElementById('barcodeResult');
+        let scannedBarcode = '';
+
+        // Starte den Barcode-Scanner
+        codeReader.decodeFromVideoDevice(null, videoElement, (result, err) => {
+            if (result) {
+                // Barcode-Wert anzeigen
+                scannedBarcode = result.text;
+                barcodeResultElement.textContent = `Erkannter Barcode: ${scannedBarcode}`;
+                codeReader.reset(); // Stoppe den Scanner nach erfolgreichem Scan
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+            }
+        });
+
+        // Funktion zum Öffnen des E-Mail-Clients mit Barcode und Text
+        function sendEmail() {
+            const customText = document.getElementById('customText').value;
+            if (scannedBarcode && customText) {
+                const recipient = "zieladresse@example.com";
+                const subject = "Barcode und Nachricht";
+                const body = `Barcode: ${scannedBarcode}\nText: ${customText}`;
+                const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+                // Öffne den Standard-E-Mail-Client
+                window.location.href = mailtoLink;
+            } else {
+                alert("Bitte scannen Sie einen Barcode und geben Sie einen Text ein.");
+            }
+        }
+    </script>
+</body>
+</html>
